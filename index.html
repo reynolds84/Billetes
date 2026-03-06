@@ -1,1 +1,78 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>OCR + Supabase</title>
 
+<script src="https://cdn.jsdelivr.net/npm/tesseract.js@4/dist/tesseract.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/supabase.min.js"></script>
+
+</head>
+<body>
+
+<h2>Analizar varias imágenes y guardar</h2>
+
+<input type="file" id="imagenes" multiple accept="image/*"><br><br>
+<button onclick="analizar()">Analizar y guardar</button>
+
+<pre id="resultado"></pre>
+
+<script>
+// Inicializar Supabase
+const supabaseUrl = "https://cjwkmtqpzvkpxjlfcyzg.supabase.co";
+const supabaseKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNqd2ttdHFwenZrcHhqbGZjeXpnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjAwNDEwMDMsImV4cCI6MjA3NTYxNzAwM30.vFwABypAsnw15vMpo3_A--ayRwUkq6iQJYUXBbbQxs8";
+const supabase = supabase.createClient(supabaseUrl, supabaseKey);
+
+async function analizar(){
+    const salida = document.getElementById("resultado");
+    const files = document.getElementById("imagenes").files;
+
+    if(files.length === 0){
+        salida.textContent = "Seleccione al menos una imagen";
+        return;
+    }
+
+    salida.textContent = "Inicializando OCR...\n";
+
+    const worker = await Tesseract.createWorker({
+        logger: m => {
+            if(m.status === "recognizing text"){
+                salida.textContent += `Progreso OCR: ${Math.round(m.progress*100)}%\n`;
+            }
+        }
+    });
+
+    await worker.loadLanguage('eng');
+    await worker.initialize('eng');
+
+    salida.textContent += "OCR listo\n\n";
+
+    for(let i=0; i<files.length; i++){
+        const file = files[i];
+        salida.textContent += `Analizando: ${file.name}\n`;
+
+        const { data } = await worker.recognize(file);
+
+        salida.textContent += "RESULTADO:\n" + data.text + "\n";
+
+        // Guardar en Supabase
+        const { error } = await supabase
+          .from('ocr_textos')
+          .insert([{ nombre_imagen: file.name, contenido: data.text }]);
+
+        if(error){
+            salida.textContent += `Error guardando ${file.name}: ${error.message}\n`;
+        } else {
+            salida.textContent += `Guardado en Supabase ✅\n`;
+        }
+
+        salida.textContent += "--------------------------\n";
+    }
+
+    await worker.terminate();
+    salida.textContent += "\nProceso terminado";
+}
+</script>
+
+</body>
+</html>
