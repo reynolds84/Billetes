@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>OCR Imagenes</title>
+
+<script src="https://cdn.jsdelivr.net/npm/tesseract.js@4/dist/tesseract.min.js"></script>
+
+</head>
+<body>
+
+<h2>Analizar imágenes</h2>
+
+<input type="file" id="imagenes" multiple accept="image/*">
+
+<br><br>
+
+<button onclick="analizar()">Analizar</button>
+
+<pre id="resultado"></pre>
+
+<script>
+
+async function analizar(){
+
+    const files = document.getElementById("imagenes").files;
+    const salida = document.getElementById("resultado");
+
+    salida.textContent = "Analizando...\n\n";
+
+    for (let i = 0; i < files.length; i++) {
+
+        const file = files[i];
+
+        salida.textContent += "Imagen: " + file.name + "\n";
+
+        const { data: { text } } = await Tesseract.recognize(
+            file,
+            'eng'
+        );
+
+        salida.textContent += text + "\n";
+        salida.textContent += "-----------------------\n";
+
+    }
+
+}
+
+</script>
+
+</body>
+</html>
