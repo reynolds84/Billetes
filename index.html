@@ -5,76 +5,37 @@
 <meta charset="UTF-8">
 <title>OCR Imágenes</title>
 
-<script src="https://cdn.jsdelivr.net/npm/tesseract.js@4/dist/tesseract.min.js"></script>
-
-<style>
-body{
-font-family: Arial;
-margin:40px;
-background:#f5f5f5;
-}
-
-h2{
-margin-bottom:20px;
-}
-
-button{
-padding:10px 20px;
-font-size:16px;
-cursor:pointer;
-}
-
-#resultado{
-background:white;
-padding:20px;
-margin-top:20px;
-border-radius:5px;
-white-space:pre-wrap;
-}
-</style>
-
-</head>
-
-<body>
-
-<h2>Analizar imágenes</h2>
-
-<input type="file" id="imagenes" multiple accept="image/*">
-
-<br><br>
-
-<button onclick="analizar()">Analizar</button>
-
-<pre id="resultado"></pre>
-
 <script>
 
 async function analizar(){
 
-const files = document.getElementById("imagenes").files;
 const salida = document.getElementById("resultado");
-
-if(files.length === 0){
-salida.textContent = "Seleccione una imagen primero";
-return;
-}
+const files = document.getElementById("imagenes").files;
 
 salida.textContent = "Inicializando OCR...\n";
 
-const worker = await Tesseract.createWorker('eng');
+const worker = await Tesseract.createWorker({
+logger: m => {
+if(m.status === "recognizing text"){
+salida.textContent = "Progreso OCR: " + Math.round(m.progress*100) + "%";
+}
+}
+});
 
-salida.textContent += "OCR listo\n\n";
+await worker.loadLanguage('eng');
+await worker.initialize('eng');
+
+salida.textContent += "\nOCR listo\n";
 
 for (let i = 0; i < files.length; i++) {
 
-const file = files[i];
+salida.textContent += "\nAnalizando: " + files[i].name + "\n";
 
-salida.textContent += "Analizando: " + file.name + "\n";
+const { data } = await worker.recognize(files[i]);
 
-const { data } = await worker.recognize(file);
-
+salida.textContent += "\nRESULTADO:\n";
 salida.textContent += data.text + "\n";
-salida.textContent += "-----------------------------\n";
+salida.textContent += "----------------------\n";
 
 }
 
@@ -85,7 +46,6 @@ salida.textContent += "\nProceso terminado";
 }
 
 </script>
-
 </body>
 </html>
 
