@@ -57,7 +57,7 @@ async function analizar(){
 
         // Guardar en Supabase
         const { error } = await supabase
-          .from('ocr_textos')
+          .from('Billetes')
           .insert([{ nombre_imagen: file.name, contenido: data.text }]);
 
         if(error){
