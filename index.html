@@ -2,16 +2,16 @@
 <html>
 <head>
 <meta charset="UTF-8">
-<title>OCR Imagen</title>
+<title>OCR Varias Imágenes</title>
 
 <script src="https://cdn.jsdelivr.net/npm/tesseract.js@4/dist/tesseract.min.js"></script>
 
 </head>
 <body>
 
-<h2>OCR Imagen</h2>
+<h2>Analizar varias imágenes</h2>
 
-<input type="file" id="imagen" accept="image/*"><br><br>
+<input type="file" id="imagenes" multiple accept="image/*"><br><br>
 <button onclick="analizar()">Analizar</button>
 
 <pre id="resultado"></pre>
@@ -19,41 +19,41 @@
 <script>
 async function analizar(){
     const salida = document.getElementById("resultado");
-    const file = document.getElementById("imagen").files[0];
+    const files = document.getElementById("imagenes").files;
 
-    if(!file){
-        salida.textContent = "Seleccione una imagen";
+    if(files.length === 0){
+        salida.textContent = "Seleccione al menos una imagen";
         return;
     }
 
     salida.textContent = "Inicializando OCR...\n";
 
-    try {
-        const worker = await Tesseract.createWorker({
-            logger: m => {
-                if(m.status === "recognizing text"){
-                    salida.textContent = "Progreso OCR: " + Math.round(m.progress*100) + "%";
-                }
+    const worker = await Tesseract.createWorker({
+        logger: m => {
+            if(m.status === "recognizing text"){
+                salida.textContent += `Progreso OCR: ${Math.round(m.progress*100)}%\n`;
             }
-        });
+        }
+    });
 
-        await worker.loadLanguage('eng');
-        await worker.initialize('eng');
+    await worker.loadLanguage('eng');
+    await worker.initialize('eng');
 
-        salida.textContent += "\nOCR listo\n";
-        salida.textContent += "Analizando: " + file.name + "\n";
+    salida.textContent += "OCR listo\n\n";
+
+    for(let i=0; i<files.length; i++){
+        const file = files[i];
+        salida.textContent += `Analizando: ${file.name}\n`;
 
         const { data } = await worker.recognize(file);
 
-        salida.textContent += "\nRESULTADO:\n" + data.text + "\n";
-
-        await worker.terminate();
-
-        salida.textContent += "\nProceso terminado";
-    } catch (e){
-        salida.textContent = "Error: " + e.message;
-        console.error(e);
+        salida.textContent += "RESULTADO:\n" + data.text + "\n";
+        salida.textContent += "--------------------------\n";
     }
+
+    await worker.terminate();
+
+    salida.textContent += "\nProceso terminado";
 }
 </script>
 
