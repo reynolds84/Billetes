@@ -30,6 +30,22 @@ min-height:200px;
 line-height:1.2;  /* líneas más juntas */
 }
 
+  /* botón copiar grande */
+#btnCopiar{
+    width:100%;
+    margin-top:10px;
+    padding:14px;
+    font-size:18px;
+    background:#90EE90;
+    border:none;
+    cursor:pointer;
+}
+
+#btnCopiar:hover{
+    background:#7ddf7d;
+}
+
+
 </style>
 
 </head>
@@ -43,7 +59,7 @@ line-height:1.2;  /* líneas más juntas */
 <br>
 
 <button onclick="analizar()">Analizar</button>
-<button onclick="copiar()">Copiar resultado</button>
+<button id="btnCopiar" onclick="copiar()">Copiar resultado </button>
 
 <div id="resultado"></div>
 
