@@ -66,6 +66,7 @@ button{
 #imagenes{
     display:none;
 }
+
 </style>
 </head>
 
@@ -73,8 +74,9 @@ button{
 
 <h2>OCR de imágenes</h2>
 
-<!-- Selector de archivos personalizado -->
+<!-- Selector de archivos personalizado con contador -->
 <label id="labelArchivo" for="imagenes">Elegir imágenes</label>
+<span id="numSeleccionadas" style="margin-left:10px; font-weight:bold;">0 imágenes</span>
 <input type="file" id="imagenes" multiple accept="image/*">
 
 <br>
@@ -86,6 +88,13 @@ button{
 <div id="resultado"></div>
 
 <script>
+// Actualizar cantidad de imágenes seleccionadas
+document.getElementById("imagenes").addEventListener("change", function() {
+    const cantidad = this.files.length;
+    const labelCantidad = document.getElementById("numSeleccionadas");
+    labelCantidad.textContent = cantidad + (cantidad === 1 ? " imagen" : " imágenes");
+});
+
 async function analizar(){
 
     const files = document.getElementById("imagenes").files;
