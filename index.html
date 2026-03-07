@@ -74,59 +74,58 @@ font-weight:bold;
 
 async function analizar(){
 
-const files = document.getElementById("imagenes").files;
-const salida = document.getElementById("resultado");
-const progreso = document.getElementById("progreso");
+    const files = document.getElementById("imagenes").files;
+    const salida = document.getElementById("resultado");
+    const progreso = document.getElementById("progreso");
 
-if(files.length===0){
-alert("Seleccione imágenes");
-return;
-}
+    if(files.length===0){
+        alert("Seleccione imágenes");
+        return;
+    }
 
-salida.textContent="";
-progreso.textContent="Inicializando OCR...";
+    // LIMPIAR resultados y progreso al iniciar
+    salida.textContent = "";
+    progreso.textContent = "";
 
-const worker = await Tesseract.createWorker({
-logger: m => {
+    const worker = await Tesseract.createWorker({
+        logger: m => {
+            if(m.status === "recognizing text"){
+                const p = Math.round(m.progress * 100);
+                progreso.textContent = "Procesando: " + p + "%";
+            }
+        }
+    });
 
-if(m.status === "recognizing text"){
-const p = Math.round(m.progress * 100);
-progreso.textContent = "Procesando: " + p + "%";
-}
+    await worker.loadLanguage('eng');
+    await worker.initialize('eng');
 
-}
-});
+    for(let i=0;i<files.length;i++){
 
-await worker.loadLanguage('eng');
-await worker.initialize('eng');
+        const file = files[i];
 
-for(let i=0;i<files.length;i++){
+        progreso.textContent = "Analizando: " + file.name;
 
-const file = files[i];
+        const { data } = await worker.recognize(file);
 
-progreso.textContent = "Analizando: " + file.name;
+        salida.textContent += "===IMAGEN===\n";
+        salida.textContent += data.text.trim() + "\n";
+        salida.textContent += "===FIN===\n\n";
 
-const { data } = await worker.recognize(file);
+    }
 
-salida.textContent += "===IMAGEN===\n";
-salida.textContent += data.text.trim() + "\n";
-salida.textContent += "===FIN===\n\n";
+    await worker.terminate();
 
-}
-
-await worker.terminate();
-
-progreso.textContent = "OCR terminado";
+    progreso.textContent = "OCR terminado";
 
 }
 
 function copiar(){
 
-const texto = document.getElementById("resultado").textContent;
+    const texto = document.getElementById("resultado").textContent;
 
-navigator.clipboard.writeText(texto);
+    navigator.clipboard.writeText(texto);
 
-alert("Copiado");
+    alert("Copiado");
 
 }
 
