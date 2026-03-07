@@ -2,7 +2,7 @@
 <html>
 <head>
 <meta charset="UTF-8">
-<title>OCR de Imágenes con Supabase</title>
+<title>Seleccione las IMagenes</title>
 
 <script src="https://cdn.jsdelivr.net/npm/tesseract.js@4/dist/tesseract.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/supabase.min.js"></script>
@@ -80,8 +80,8 @@ button{
 
 <script>
 // Configuración Supabase
-const supabaseUrl = 'TU_SUPABASE_URL';
-const supabaseKey = 'TU_SUPABASE_KEY';
+const supabaseUrl = 'https://cjwkmtqpzvkpxjlfcyzg.supabase.co';
+const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNqd2ttdHFwenZrcHhqbGZjeXpnIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc2MDA0MTAwMywiZXhwIjoyMDc1NjE3MDAzfQ.GW5i0OR3HZIIv7B3B6y5eCGhOr91y1UPODX-Ia7S_hA';
 const supabase = supabase.createClient(supabaseUrl, supabaseKey);
 
 // Mostrar cuántas imágenes se seleccionaron
