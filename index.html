@@ -72,7 +72,7 @@ button{
 
 <body>
 
-<h2>Selected IMages</h2>
+<h2>OCR de imágenes</h2>
 
 <!-- Selector de archivos personalizado con contador -->
 <label id="labelArchivo" for="imagenes">Elegir imágenes</label>
@@ -136,17 +136,17 @@ async function analizar(){
     await worker.terminate();
 
     progreso.textContent = "OCR terminado";
+
+    // ✅ Enviar resultado a C# vía WebView2
+    if(window.chrome && window.chrome.webview){
+        window.chrome.webview.postMessage(salida.textContent.trim());
+    }
 }
 
 function copiar(){
     const texto = document.getElementById("resultado").textContent;
     navigator.clipboard.writeText(texto);
     alert("Copiado");
-
-// Llamar a C# vía window.chrome.webview
-if(window.chrome && window.chrome.webview){
-    window.chrome.webview.postMessage(data.text.trim());
-    
 }
 </script>
 
