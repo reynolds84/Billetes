@@ -53,6 +53,10 @@ button{
 #labelArchivo:hover{
     background:#ddd;
 }
+#selectedCount{
+    margin-left:10px;
+    font-weight:bold;
+}
 #imagenes{
     display:none;
 }
@@ -64,6 +68,7 @@ button{
 <h2>OCR de imágenes con Supabase</h2>
 
 <label id="labelArchivo" for="imagenes">Elegir imágenes</label>
+<span id="selectedCount">0 imágenes seleccionadas</span>
 <input type="file" id="imagenes" multiple accept="image/*">
 
 <br>
@@ -75,14 +80,20 @@ button{
 
 <script>
 // Configuración Supabase
-const supabaseUrl = 'https://cjwkmtqpzvkpxjlfcyzg.supabase.co';
-const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNqd2ttdHFwenZrcHhqbGZjeXpnIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc2MDA0MTAwMywiZXhwIjoyMDc1NjE3MDAzfQ.GW5i0OR3HZIIv7B3B6y5eCGhOr91y1UPODX-Ia7S_hA';
+const supabaseUrl = 'TU_SUPABASE_URL';
+const supabaseKey = 'TU_SUPABASE_KEY';
 const supabase = supabase.createClient(supabaseUrl, supabaseKey);
+
+// Mostrar cuántas imágenes se seleccionaron
+document.getElementById("imagenes").addEventListener("change", function(){
+    const count = this.files.length;
+    document.getElementById("selectedCount").textContent = count + " imagen" + (count!==1?"es":"") + " seleccionada" + (count!==1?"s":"");
+});
 
 // Función para insertar en Supabase
 async function insertarEnSupabase(nombreImagen, textoOCR){
     const { data, error } = await supabase
-        .from('Billetes')
+        .from('ocr_results')
         .insert([
             { imagen: nombreImagen, contenido: textoOCR }
         ]);
@@ -126,7 +137,7 @@ async function analizar(){
         const { data } = await worker.recognize(file);
 
         // Mostrar en pantalla
-        salida.textContent += "===IMAGEN===\n";
+        salida.textContent += "===IMAGEN=== " + file.name + "\n";
         salida.textContent += data.text.trim() + "\n";
         salida.textContent += "===FIN===\n\n";
 
