@@ -69,7 +69,9 @@ const file = files[i];
 
 const { data } = await worker.recognize(file);
 
-salida.textContent += data.text.trim() + "\n\n";
+salida.textContent += "===IMAGEN===\n";
+salida.textContent += data.text.trim() + "\n";
+salida.textContent += "===FIN===\n\n";
 
 }
 
