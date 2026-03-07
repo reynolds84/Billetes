@@ -1,1 +1,149 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>OCR de Imágenes con Supabase</title>
 
+<script src="https://cdn.jsdelivr.net/npm/tesseract.js@4/dist/tesseract.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/supabase.min.js"></script>
+
+<style>
+body{
+    font-family: Arial;
+    margin:30px;
+}
+button{
+    padding:10px 20px;
+    margin:10px 0;
+    font-size:16px;
+}
+#resultado{
+    white-space:pre-wrap;
+    border:1px solid #ccc;
+    padding:15px;
+    margin-top:10px;
+    min-height:200px;
+    font-size:12px;
+    line-height:1.2;
+}
+#btnCopiar{
+    width:100%;
+    margin-top:10px;
+    padding:14px;
+    font-size:18px;
+    background:#90EE90;
+    border:none;
+    cursor:pointer;
+}
+#btnCopiar:hover{
+    background:#7ddf7d;
+}
+#progreso{
+    margin-top:10px;
+    font-weight:bold;
+}
+#labelArchivo{
+    display:inline-block;
+    padding:10px 15px;
+    background:#eee;
+    cursor:pointer;
+    border:1px solid #ccc;
+    margin-bottom:10px;
+}
+#labelArchivo:hover{
+    background:#ddd;
+}
+#imagenes{
+    display:none;
+}
+</style>
+</head>
+
+<body>
+
+<h2>OCR de imágenes con Supabase</h2>
+
+<label id="labelArchivo" for="imagenes">Elegir imágenes</label>
+<input type="file" id="imagenes" multiple accept="image/*">
+
+<br>
+<button onclick="analizar()">Analizar</button>
+<button id="btnCopiar" onclick="copiar()">Copiar resultado</button>
+
+<div id="progreso"></div>
+<div id="resultado"></div>
+
+<script>
+// Configuración Supabase
+const supabaseUrl = 'https://cjwkmtqpzvkpxjlfcyzg.supabase.co';
+const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNqd2ttdHFwenZrcHhqbGZjeXpnIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc2MDA0MTAwMywiZXhwIjoyMDc1NjE3MDAzfQ.GW5i0OR3HZIIv7B3B6y5eCGhOr91y1UPODX-Ia7S_hA';
+const supabase = supabase.createClient(supabaseUrl, supabaseKey);
+
+// Función para insertar en Supabase
+async function insertarEnSupabase(nombreImagen, textoOCR){
+    const { data, error } = await supabase
+        .from('Billetes')
+        .insert([
+            { imagen: nombreImagen, contenido: textoOCR }
+        ]);
+    if(error){
+        console.error("Error insertando:", error);
+    } else {
+        console.log("Insertado con éxito:", data);
+    }
+}
+
+async function analizar(){
+    const files = document.getElementById("imagenes").files;
+    const salida = document.getElementById("resultado");
+    const progreso = document.getElementById("progreso");
+
+    if(files.length===0){
+        alert("Seleccione imágenes");
+        return;
+    }
+
+    // Limpiar resultados y progreso
+    salida.textContent = "";
+    progreso.textContent = "Inicializando OCR...";
+
+    const worker = await Tesseract.createWorker({
+        logger: m => {
+            if(m.status === "recognizing text"){
+                const p = Math.round(m.progress * 100);
+                progreso.textContent = "Procesando: " + p + "%";
+            }
+        }
+    });
+
+    await worker.loadLanguage('eng');
+    await worker.initialize('eng');
+
+    for(let i=0;i<files.length;i++){
+        const file = files[i];
+        progreso.textContent = "Analizando: " + file.name;
+
+        const { data } = await worker.recognize(file);
+
+        // Mostrar en pantalla
+        salida.textContent += "===IMAGEN===\n";
+        salida.textContent += data.text.trim() + "\n";
+        salida.textContent += "===FIN===\n\n";
+
+        // Insertar en Supabase
+        await insertarEnSupabase(file.name, data.text.trim());
+    }
+
+    await worker.terminate();
+    progreso.textContent = "OCR terminado y resultados insertados en Supabase";
+}
+
+function copiar(){
+    const texto = document.getElementById("resultado").textContent;
+    navigator.clipboard.writeText(texto);
+    alert("Copiado");
+}
+</script>
+
+</body>
+</html>
